@@ -1,0 +1,296 @@
+name: OdisseyStaff
+version: 7.5.6
+main: es.odissey.staff.OdisseyStaff
+api-version: '1.21'
+description: Herramientas de staff de Odissey. El panel web lo controla el bot, no este plugin.
+author: Odissey
+folia-supported: false
+softdepend: [CoreProtect]
+
+# Los drivers de base de datos los baja Paper solo cuando hace falta: con
+# database.type en yaml no se descarga ninguno.
+libraries:
+  - org.xerial:sqlite-jdbc:3.46.1.0
+  - com.mysql:mysql-connector-j:9.3.0
+  - org.postgresql:postgresql:42.7.14
+  - com.h2database:h2:2.5.252
+  - org.mariadb.jdbc:mariadb-java-client:4.0.0
+
+commands:
+  staff:
+    description: "Abre el panel de staff - herramientas, espiar, sanciones y registros."
+    usage: /staff
+    permission: odissey.staff
+  staffitems:
+    description: Da o quita las cinco herramientas de staff de la barra rapida.
+    usage: /staffitems
+    permission: odissey.staff
+  staffespiar:
+    description: "Espia a un jugador: posicion, inventario, chat y lo que hace, sin que se entere."
+    usage: /staffespiar [jugador|off]
+    permission: odissey.staff.data
+  vanish:
+    description: Oculta tu cuerpo a los jugadores.
+    usage: /vanish [on|off]
+    permission: odissey.staff
+  staffchat:
+    description: Habla solo con el staff.
+    usage: /staffchat <mensaje>
+    aliases: [sc]
+    permission: odissey.staff
+  freeze:
+    description: Congela a un jugador y lo suelta si ya estaba congelado.
+    usage: /freeze <jugador>
+    permission: odissey.staff
+  staffwarn:
+    description: "Avisa a un jugador de una Norma. Los avisos se acumulan: al llegar al umbral saltan los automaticos (ver config warns)."
+    usage: /staffwarn <jugador> <motivo>
+    aliases: [warn]
+    permission: odissey.staff
+  staffmute:
+    description: Silencia a un jugador. El permanente pide escribir PERM al final.
+    usage: /staffmute <jugador> [tiempo|perm] <motivo>
+    aliases: [mute]
+    permission: odissey.staff.mute
+  tempmute:
+    description: Silencia temporalmente a un jugador; requiere una duración.
+    usage: /tempmute <jugador> <tiempo> <motivo>
+    permission: odissey.staff.mute
+  ipban:
+    description: Banea la IP actual o la última conocida de un jugador.
+    usage: /ipban <jugador|ip> [tiempo|perm] <motivo>
+    permission: odissey.staff.ban
+  ipmute:
+    description: Silencia la IP actual o la última conocida de un jugador.
+    usage: /ipmute <jugador|ip> [tiempo|perm] <motivo>
+    permission: odissey.staff.mute
+  ghostmute:
+    description: Silencia a un jugador sin avisarle y reenvía sus mensajes al staff.
+    usage: /ghostmute <jugador> [tiempo|perm] <motivo>
+    permission: odissey.staff.mute
+  clearchat:
+    description: Limpia el chat público de todos los jugadores.
+    usage: /clearchat
+    permission: odissey.staff
+  mutechat:
+    description: Pausa o abre el chat público; el staff puede seguir hablando.
+    usage: /mutechat [on|off]
+    permission: odissey.staff
+  staffban:
+    description: Abre el diálogo de baneos o aplica una sanción desde el comando.
+    usage: /ban [jugador] [tiempo] <motivo>
+    aliases: [ban]
+    permission: odissey.staff.ban
+  tempban:
+    description: Banea temporalmente a un jugador; requiere una duración.
+    usage: /tempban <jugador> <tiempo> <motivo>
+    permission: odissey.staff.ban
+  staffkick:
+    description: Expulsa a un jugador sin ban.
+    usage: /staffkick <jugador> <motivo>
+    aliases: [kick]
+    permission: odissey.staff.mute
+  stafftools:
+    description: Pone tu rango delante del nombre en el chat.
+    usage: /stafftools <color> [nombre]
+    permission: odissey.staff
+
+  staffinfo:
+    description: Toda la informacion de un jugador de un vistazo.
+    usage: /staffinfo <jugador>
+    permission: odissey.staff.data
+  staffunmute:
+    description: Levanta el silencio de un jugador.
+    usage: /staffunmute <jugador>
+    aliases: [unmute]
+    permission: odissey.staff.mute
+  unban:
+    description: Levanta un ban de jugador.
+    usage: /unban <jugador>
+    permission: odissey.staff.unban
+  unwarn:
+    description: Retira un aviso activo; sin id quita el más reciente.
+    usage: /unwarn <jugador> [id]
+    permission: odissey.staff
+  checkban:
+    description: Consulta el estado, motivo y vencimiento del ban de un jugador.
+    usage: /checkban <jugador>
+    permission: odissey.staff.data
+  checkmute:
+    description: Consulta el estado, motivo y vencimiento del silencio de un jugador.
+    usage: /checkmute <jugador>
+    permission: odissey.staff.data
+  warnings:
+    description: Consulta los avisos activos de un jugador.
+    usage: /warnings <jugador>
+    permission: odissey.staff.data
+  banlist:
+    description: Lista los bans activos.
+    usage: /banlist
+    permission: odissey.staff.data
+  mutelist:
+    description: Lista los silencios activos.
+    usage: /mutelist
+    permission: odissey.staff.data
+  report:
+    description: Envía al staff un reporte de conducta.
+    usage: /report <jugador> <motivo>
+  ticket:
+    description: Crea una solicitud de soporte o permite al staff revisarla.
+    usage: /ticket <create <mensaje>|list|view <id>|close <id>>
+  evidence:
+    description: Añade enlaces de evidencia, lista pruebas o captura el inventario actual.
+    usage: /evidence <add|view|capture> <jugador> [url|nota]
+    permission: odissey.staff.data
+  redemption:
+    description: Reduce parte de una sanción mediante un reto de cálculo.
+    usage: /redemption <start|answer <resultado>>
+  ai:
+    description: Analiza mensajes recientes y sugiere acciones de moderación con OpenAI.
+    usage: /ai <analyze|suggest> <jugador>
+    permission: odissey.ai
+  staffdatawipe:
+    description: Previsualiza y borra manualmente datos vanilla de un jugador.
+    usage: /staffdatawipe preview <jugador> | confirm
+    permission: odissey.admin
+  lbr:
+    description: Consulta información, estadísticas o recarga la configuración.
+    usage: /lbr <info|stats|reload>
+    permission: odissey.admin
+  geoip:
+    description: Consulta país, región, ciudad y proveedor de una IP.
+    usage: /geoip <jugador|ip>
+    permission: odissey.staff.data
+  vpncheck:
+    description: Consulta si el proveedor detecta VPN o proxy en una IP.
+    usage: /vpncheck <jugador|ip>
+    permission: odissey.staff.data
+  staffrollback:
+    description: Previsualiza y confirma una reversión local mediante CoreProtect.
+    usage: /staffrollback preview <jugador-online> <segundos> <radio> | confirm
+    permission: odissey.admin
+  staffhistory:
+    description: Historial de sanciones de un jugador, o del servidor entero.
+    usage: /staffhistory [jugador|staff <nombre>]
+    permission: odissey.staff.data
+  history:
+    description: "Historial de un jugador en menu, con quien hizo cada cosa."
+    usage: /history <jugador>
+    permission: odissey.staff.data
+  banear:
+    description: "Menu de baneo: tiempo con botones y motivo escrito."
+    usage: /banear <jugador>
+    aliases: [punish]
+    permission: odissey.staff.ban
+  stafffrozen:
+    description: "Lista de quien esta congelado ahora mismo."
+    usage: /stafffrozen
+    permission: odissey.staff
+  staffrespawn:
+    description: Mata y reaparece a un jugador atascado.
+    usage: /staffrespawn <jugador>
+    permission: odissey.staff
+  staffspectate:
+    description: Mira a otro jugador sin que te vea y sin tocar nada.
+    usage: /staffspectate <jugador>|off
+    permission: odissey.staff
+  staffsay:
+    description: Mensaje grande para todo el servidor.
+    usage: /staffsay [segundos] <mensaje>
+    permission: odissey.staff
+  staffactionbar:
+    description: "Mensaje en la barra superior para todo el servidor."
+    usage: /staffactionbar [segundos] <mensaje>
+    permission: odissey.staff
+  staffsancion:
+    description: "Sanciona a un jugador - se queda congelado hasta que se acaba."
+    usage: /staffsancion (abre el menu) | /staffsancion <jugador> off | /staffsancion lista
+    permission: odissey.staff.mute
+  staffnota:
+    description: "Deja una nota interna sobre un jugador. El jugador no se entera."
+    usage: /staffnota <jugador> <texto>
+    permission: odissey.staff
+  staffvigilar:
+    description: "Pone a un jugador en la lista de vigilancia: avisa al staff cuando entra."
+    usage: /staffvigilar <jugador> <motivo>
+    permission: odissey.staff
+  staffchatlog:
+    description: "Historial: lo que ha dicho un jugador por el chat, o del canal de staff."
+    usage: "/staffchatlog <jugador> [minutos] [palabra]  |  /staffchatlog"
+    permission: odissey.staff.data
+  staffrestaurar:
+    description: "Vuelve a atras en los archivos del plugin desde una copia de seguridad."
+    usage: "/staffrestaurar [nombre-de-la-copia]"
+    permission: odissey.admin
+  staffcall:
+    description: "Pide ayuda al resto del staff que este conectado."
+    usage: /staffcall
+    permission: odissey.staff
+  staffonline:
+    description: "Quien ha estado conectado en las ultimas horas."
+    usage: /staffonline [horas]
+    permission: odissey.staff
+  staffbloquear:
+    description: "Le prohibe un comando a un jugador concreto."
+    usage: /staffbloquear <jugador> <comando>
+    permission: odissey.staff
+  staffalt:
+    description: "Busca cuentas alternativas de un jugador: IP, nombres parecidos y horas jugadas."
+    usage: /staffalt <jugador>
+    aliases: [alts, dupeip]
+    permission: odissey.staff.data
+  network:
+    description: Consulta cuentas alternativas o conexiones de un jugador.
+    usage: /network <alts|connections> <jugador>
+    permission: odissey.staff.data
+  staffinvsee:
+    description: "Ver el inventario de un jugador, aunque ya se haya ido."
+    usage: /staffinvsee <jugador>
+    permission: odissey.staff.inventory
+  staffsnapshot:
+    description: "Lo que ha hecho un jugador en los ultimos minutos: bloques, comandos y chat."
+    usage: /staffsnapshot <jugador> [minutos]
+    permission: odissey.staff.data
+  staffjaula:
+    description: "Mete a un jugador en una celda y le quita lo que no deberia tener."
+    usage: /staffjaula <jugador> <celda> <tiempo> [motivo]
+    permission: odissey.staff.mute
+# No hay comando de teletransporte (/tp ni /stafftp): se quito a proposito.
+# Para moverse sigue estando la perla de /staff, que lleva al staff a un jugador
+# conectado al azar. Para mover a OTRO jugador, la vara de blaze, que lo manda
+# a su cama o al spawn.
+#
+# No hay ningun comando de web. El acceso al panel de administracion se decide
+# en el config.json del bot, en la lista webAdmins.
+
+permissions:
+  odissey.staff:
+    description: Acceso general al panel de staff; mantiene todos los permisos de acciones.
+    default: op
+    children:
+      odissey.staff.ban: true
+      odissey.staff.unban: true
+      odissey.staff.mute: true
+      odissey.staff.inventory: true
+      odissey.staff.data: true
+  odissey.staff.ban:
+    description: Puede aplicar baneos de jugador e IP.
+    default: false
+  odissey.staff.unban:
+    description: Puede quitar baneos.
+    default: false
+  odissey.staff.mute:
+    description: Puede silenciar, quitar silencios y aplicar sanciones del menú.
+    default: false
+  odissey.staff.inventory:
+    description: Puede consultar inventarios de jugadores.
+    default: false
+  odissey.staff.data:
+    description: Puede consultar fichas, historiales, evidencias y datos de jugadores.
+    default: false
+  odissey.admin:
+    description: "Puede aplicar sanciones a otros miembros del staff y restaurar copias de seguridad."
+    default: op
+  odissey.ai:
+    description: Puede enviar mensajes del chat al análisis de moderación OpenAI.
+    default: op

@@ -1,0 +1,25 @@
+
+# Keep generated files, credentials and runtime data out of the repository
+.env
+.env.*
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.log
+*.class
+*.jar
+.gradle/
+.gradle-user-home/
+node_modules/
+build/
+target/
+dist/
+out/
+release*/
+run/
+uploads/
+
+# Odissey backup safeguards
+.gradle*/

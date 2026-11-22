@@ -1,0 +1,490 @@
+# =============================================================
+#  OdisseyStaff - configuracion
+# =============================================================
+#
+#  Este plugin NO tiene nada de la web. El panel de administracion lo
+#  controla el bot: para darle acceso a alguien se edita la lista webAdmins
+#  del config.json del bot y ya esta. Aqui no hay ningun secreto que
+#  mantener sincronizado.
+
+# Quien puede usar las herramientas de staff. Por defecto, los ops del
+# servidor. Si usas LuckPerms, cambia esto a false y da el permiso
+# odissey.staff desde LuckPerms.
+usar-op-como-staff: true
+
+# Plantillas rápidas disponibles en el diálogo de /ban.
+# Si eliges una plantilla, sus valores completan el tiempo o motivo que dejes vacío.
+# Puedes añadir, quitar o editar las opciones; unidad admite m (minutos), h (horas), d (días).
+ban-dialog:
+  presets:
+    - nombre: "Spam"
+      cantidad: 1
+      unidad: h
+      motivo: "Spam reiterado"
+    - nombre: "Insultos"
+      cantidad: 1
+      unidad: d
+      motivo: "Insultos o faltas de respeto"
+    - nombre: "Uso de hacks"
+      cantidad: 7
+      unidad: d
+      motivo: "Uso de modificaciones no permitidas"
+    - nombre: "Abuso de exploits"
+      cantidad: 30
+      unidad: d
+      motivo: "Abuso de exploits"
+
+# Si OdisseyStaff está detrás de Velocity/BungeeCord, pide al proxy desconectar
+# al baneado antes del kick local para que no entre al servidor de fallback.
+proxy-kick:
+  enabled: true
+
+# Sincronización opcional con la página /baneos de Odissey.
+# Ejecuta supabase/08-baneos.sql y guarda aquí la clave privada del servidor.
+# No publiques ni compartas service-key: concede permisos de escritura.
+web-ban-sync:
+  enabled: false
+  supabase-url: https://cffpnxmtwfaublkvrobt.supabase.co
+  service-key: ""
+  server-id: odissey-main
+
+# =============================================================
+#  Donde se guardan los datos
+# =============================================================
+#
+#  yaml       = un archivo .yml por store
+#  sqlite     = archivo local .db
+#  h2         = base local H2
+#  mysql      = MySQL o MariaDB
+#  postgresql = servidor PostgreSQL
+#
+#  La primera vez que arranca con base de datos y hay archivos .yml con datos,
+#  se importan solos y el archivo se conserva como respaldo: no se borra nada.
+#  A partir de ahi, los .yml dejan de tocarse y todo va a la base de datos.
+#
+#  Si la base de datos no arranca (MySQL caido, contrasena mal, el driver no
+#  baja), el plugin lo avisa por consola y sigue guardando en .yml. Un problema
+#  de base de datos no puede dejar el servidor sin sanciones.
+database:
+  type: sqlite
+  sqlite:
+    # Nombre del archivo, o una ruta completa si lo prefieres fuera de la carpeta.
+    file: odisseystaff.db
+  mysql:
+    host: localhost
+    port: 3306
+    database: odisseystaff
+    user: root
+    password: ""
+  postgresql:
+    host: localhost
+    port: 5432
+    database: odisseystaff
+    user: postgres
+    password: ""
+  h2:
+    file: odisseystaff-h2
+    user: sa
+    password: ""
+
+items:
+  # Las herramientas se guardan y vuelven solas al morir o al reconectar.
+  #
+  # Antes se perdian y habia que poner /staff otra vez en cada conexion. En
+  # una ronda de moderacion eso es quedarse sin herramientas justo cuando mas
+  # hacen falta. Con esto en false, se vuelven a perder.
+  #
+  # Solo se devuelven a quien es staff de verdad, aunque el archivo del
+  # servidor diga lo contrario.
+  persistentes: true
+
+staff-chat:
+  prefijo: "&8[&bStaff&8] &7"
+  color: "&b"
+
+  # Guardar lo que se dice por /staffchat para poder buscarlo despues con
+  # /staffchatlog. Sin esto, un "eso ya lo habia arreglado" se pierde en
+  # cuanto se cierra el Minecraft.
+  guardar-historial: true
+
+  # Cuantos mensajes se guardan y cuantos dias.
+  max-lineas: 1000
+  dias-guardados: 30
+
+# ---------------------------------------------------------------
+#  AVISOS
+# ---------------------------------------------------------------
+# Cada vez que el staff hace algo (warn, mute, ban, kick) se deja anotado en
+# el log del servidor, para poder consultarlo con /staffhistory.
+avisos:
+  # Cada vez que el staff hace algo (warn, mute, ban, kick) se deja anotado
+  # en el log del servidor y le llega al resto del staff por el chat.
+  avisar-en-consola: true
+
+  # Avisos automaticos cuando alguien entra al servidor: cuenta nueva, con la
+  # IP de alguien baneado, con una sancion todavia activa o en la lista de
+  # vigilancia. El aviso solo lo ve el staff, no el jugador.
+  al-entrar: true
+
+  # A partir de cuantos dias de edad se considera cuenta nueva.
+  cuenta-nueva-dias: 7
+
+  # Mirar si la IP de quien entra es la de algun jugador baneado. Sirve para
+  # pillar al que se hace otra cuenta para volver con la misma conexion.
+  ip-de-baneado: true
+
+  # Recordar en la barra de accion que ese jugador tiene un comando
+  # bloqueado con /staffbloquear, para que no se piense que el plugin esta roto.
+  comando-bloqueado: true
+
+# ---------------------------------------------------------------
+#  COPIAS DE SEGURIDAD
+# ---------------------------------------------------------------
+# Antes de pisar cualquier archivo del plugin (sanciones, historial, notas,
+# silencios, vigilancia, congelados, chat...) se guarda el anterior tal cual
+# estaba en la carpeta "copias". Si se borra algo sin querer, /staffrestaurar
+# lo vuelve a poner.
+#
+# OJO: esto NO es un backup de verdad. Todo sigue en el mismo disco, asi que
+# protege de un "lo he borrado sin querer" pero no de que el servidor se
+# muera. Copia la carpeta del plugin con tu propia periodicidad para lo otro.
+copias:
+  # Apagar solo si te molesta tener la carpeta creciendose.
+  activo: true
+
+  # Cuantas copias se guardan de cada archivo. Pasadas, se borran las mas
+  # antiguas, asi que el disco no se llena.
+  cuantas-por-archivo: 10
+
+# ---------------------------------------------------------------
+#  CHAT DE LOS JUGADORES
+# ---------------------------------------------------------------
+# /staffchatlog <jugador> muestra lo que ha dicho ese jugador, para cuando
+# hay que ver si de verdad insulto o solo se defendia.
+chat:
+  # Guardarlo en chat.yml. Con esto en false solo queda el historial del
+  # canal de staff, no el de los jugadores.
+  guardar: true
+
+  # Lineas que se guardan de cada jugador antes de borrar las mas antiguas.
+  max-lineas-por-jugador: 300
+
+  # Dias que se guardan. Al pasado, desaparecen solas al recargar.
+  dias-guardados: 14
+
+  # Minutos que muestra /staffchatlog <jugador> si no dices otra cosa.
+  ventana-por-defecto: 240
+
+# ---------------------------------------------------------------
+#  ANTI-SPAM
+# ---------------------------------------------------------------
+# Corta a quien repita lo mismo en bucle o meta demasiados mensajes seguidos.
+# No borra nada: lo que es, se queda en el historial de todos modos.
+antispam:
+  activo: true
+
+  # Cuantos mensajes recientes se miran para comparar.
+  ventana-mensajes: 10
+
+  # Rafaga: cuantos mensajes seguidos, DENTRO de estos segundos, cuentan como
+  # spam. Antes bastaba con tener la ventana llena (sin mirar el tiempo), asi
+  # que a partir de "ventana-mensajes" mensajes todo el mundo salia silenciado.
+  rafaga-mensajes: 5
+  rafaga-segundos: 5
+
+  # Veces seguidas que puede repetir el mismo texto antes de que le corten.
+  mismo-mensaje: 3
+
+  # Mayusculas que aguanta en un mensaje. Sirve para que un GRITO a tope
+  # con acentos no parezca spam automatico.
+  mayusculas: 6
+
+  # Cuanto se le silencia a quien pasa estos limites.
+  silencio: "5m"
+
+historial:
+  # Cuantas anotaciones se guardan en historial.yml antes de empezar a borrar
+  # las mas antiguas. Con 2000 hay para mucho.
+  max-registros: 2000
+
+# ---------------------------------------------------------------
+#  AVISOS ACUMULADOS (WARNS)
+# ---------------------------------------------------------------
+# Un aviso suelto no hace nada: el staff avisa, el jugador sigue
+# igual, y a la cuarta vez ya nadie se cree que avisaron. Aqui cada
+# aviso cuenta, y al llegar a un numero el servidor hace algo solo.
+#
+# Los escalones son datos, no codigo. Cambia los numeros cuando
+# quieras y recarga el plugin (/reload), sin recompilar nada.
+#
+#   accion: aviso   = solo avisa, no hace nada automatico
+#   accion: mute    = le silencia "tiempo"
+#   accion: ban     = le banea "tiempo"
+#
+# Un ban sin tiempo NO se aplica solo (seria permanente sin
+# querer): en ese caso avisa al staff y se decide a mano.
+warns:
+  activo: true
+
+  # Dias que cuenta un aviso. Pasados, caducan solos: un jugador que
+  # lleva anos cumpliendo no debe arrastrar un aviso viejo para
+  # siempre, o el sistema acaba quejandose solo y el staff deja de
+  # mirarlo. Con 0 no caducan nunca.
+  caducan-en-dias: 90
+
+  # Tope de avisos guardados en warns.yml.
+  max-avisos: 5000
+
+  # La escalera. El que llegue mas alto manda, y solo se aplica UNO:
+  # si lleva 7 avisos y hay escalones en 3 y en 5, salta el de 5.
+  # OJO: esto es una LISTA (lleva el - delante), no un mapa. El codigo la lee
+  # con getMapList(). Si le pones claves ("nivel1:", "nivel2:") el plugin se
+  # queda sin escalones: /staffwarn sigue contando avisos pero no dispara nada.
+  niveles:
+    - avisos: 1
+      accion: aviso
+      motivo: "Primer aviso."
+    - avisos: 3
+      accion: mute
+      tiempo: "1h"
+      motivo: "Tercer aviso."
+    - avisos: 5
+      accion: ban
+      tiempo: "1d"
+      motivo: "Quinto aviso."
+
+# El jugador no ve el mensaje de mute al escribir; el equipo de staff sí recibe
+# una copia marcada. El eco opcional hace que su propio mensaje parezca enviado.
+ghost-mute:
+  enabled: true
+  echo-to-player: true
+  staff-prefix: "&8[&cGhost&8] "
+
+# mutechat persiste el estado entre reinicios. El staff conserva el chat.
+chat-control:
+  muted: false
+
+# Límite de reportes y tickets públicos.
+reportes:
+  enfriamiento: "5m"
+  max-registros: 2000
+
+# Evita ráfagas de sanciones manuales: se cuentan los bans recientes del
+# historial por staff, incluyendo las sanciones por IP.
+limites-sanciones:
+  activo: true
+  bans-por-hora: 20
+  permanentes-por-dia: 5
+
+evidencias:
+  capturar-al-banear: true
+  max-registros: 5000
+
+notas:
+  # A partir de cuantas notas internas /staffinfo avisa de que ese jugador
+  # tiene ya mucho en su contra. Con 3 ya es una señal de que hay que mirarlo
+  # de cerca antes de darle confianza.
+  aviso-a-partir-de: 3
+
+conexiones:
+  # Registro de entradas y salidas. Lo usan /staffonline (quien estuvo
+  # conectado) y /staffalt (misma IP, nombres parecidos, horas jugadas).
+  horas-guardadas: 72
+  max-sesiones: 5000
+
+actividad:
+  # Cuanto se guarda de lo que hace cada jugador para poder mirarlo despues
+  # con /staffsnapshot: bloques rotos y puestos, comandos y chat.
+  minutos-guardados: 10
+  max-por-jugador: 200
+
+# ---------------------------------------------------------------
+#  CELDAS
+# ---------------------------------------------------------------
+# Las celdas las pones tu en el mundo: crea un punto con /setworldspawn o
+# para donde quieras, y copia aqui las coordenadas. /staffjaula Rob 1 30m lo
+# lleva ahi, le quita lo que pone en "objetos" y arranca el reloj.
+#
+# "objetos" es la lista de materiales que le RETIRAS al entrar. Es para el
+# caso tipico: alguien con bloques de diamante robados en la celda no deberia
+# quedarse con ellos.
+#
+# Si no hay ninguna celda definida, el comando dice cuales hay.
+jaulas:
+  1:
+    nombre: "Celda 1"
+    mundo: world          # el nombre exacto de tu mundo principal
+    x: 0.5
+    y: 64.0
+    z: 0.5
+    yaw: 0.0
+    pitch: 0.0
+    objetos: []
+  2:
+    nombre: "Celda 2"
+    mundo: world
+    x: 3.5
+    y: 64.0
+    z: 0.5
+    yaw: 0.0
+    pitch: 0.0
+    objetos: []
+
+# ---------------------------------------------------------------
+#  ANUNCIOS GLOBALES (BROADCASTS DE SANCIONES)
+# ---------------------------------------------------------------
+# Mensajes que salen en el chat publico para todo el servidor cuando
+# un staff silencia, sanciona o banea a alguien.
+# Puedes activar/desactivar cada uno individualmente (enabled: true/false)
+# y personalizar los mensajes en forma de lista (como un lore).
+# Variables disponibles: %jugador%, %staff%, %motivo%, %duracion% (o %tiempo%)
+broadcasts:
+  activo: true
+  mute:
+    enabled: true
+    mensaje:
+      - "&8&m----------------------------------------"
+      - "&8[&c&lSILENCIO&8] &f%jugador% &7ha sido silenciado"
+      - "&7  &eStaff: &f%staff%"
+      - "&7  &eTiempo: &f%duracion%"
+      - "&7  &eMotivo: &f%motivo%"
+      - "&8&m----------------------------------------"
+  sancion:
+    enabled: true
+    mensaje:
+      - "&8&m----------------------------------------"
+      - "&8[&c&lSANCIÓN&8] &f%jugador% &7ha sido sancionado"
+      - "&7  &eStaff: &f%staff%"
+      - "&7  &eTiempo: &f%duracion%"
+      - "&7  &eMotivo: &f%motivo%"
+      - "&8&m----------------------------------------"
+  ban:
+    enabled: true
+    mensaje:
+      - "&8&m----------------------------------------"
+      - "&8[&4&lBANEO&8] &f%jugador% &7ha sido baneado del servidor"
+      - "&7  &cStaff: &f%staff%"
+      - "&7  &cTiempo: &f%duracion%"
+      - "&7  &cMotivo: &f%motivo%"
+      - "&8&m----------------------------------------"
+
+# ---------------------------------------------------------------
+#  APARIENCIA
+# ---------------------------------------------------------------
+# Alertas externas de sanciones (desactivadas hasta configurar sus credenciales).
+integraciones:
+  discord-activo: false
+  discord-webhook: ""
+  discord-ban:
+    activo: true
+    url-baneos: "https://odisseymc.site/baneos"
+    mensaje:
+      - "🚫 **Nuevo baneo en %servidor%**"
+      - "**Jugador:** %jugador%"
+      - "**Staff:** %staff%"
+      - "**Duración:** %duracion%"
+      - "**Motivo:** %motivo%"
+      - "%url%"
+  telegram:
+    activo: false
+    token: ""
+    chat-id: ""
+
+# GeoIP comparte las IP consultadas con el proveedor externo cuando se habilita.
+geoip:
+  enabled: false
+  cache-minutes: 360
+
+# Contexto de chat que se añade a evidencias al aplicar mute o ban.
+chat-snapshots:
+  enabled: true
+  window-minutes: 20
+  max-messages: 20
+
+# Análisis manual opcional con OpenAI. Al usar /ai, los mensajes se envían a la API.
+ai:
+  enabled: false
+  api-key: ""
+  model: gpt-6-luna
+  window-minutes: 60
+  max-messages: 20
+
+# Borrado manual e irreversible de datos vanilla; desactivado por defecto.
+data-wipe:
+  enabled: false
+
+# Límites para /staffrollback. CoreProtect es una dependencia opcional.
+coreprotect:
+  max-seconds: 86400
+  max-radius: 32
+
+# Redención de sanciones: el jugador resuelve un reto y descuenta minutos.
+redemption:
+  enabled: true
+  cooldown: 24h
+  captcha-math:
+    enabled: true
+    max-attempts: 3
+    reduction: 10
+    one-time: false
+
+# Lo que va delante de cada mensaje del plugin y los sonidos de los menus.
+mensajes:
+  # El prefijo del plugin. Identidad de Odissey: [ODISSEY] en dorado.
+  # Los "&" son codigos de color. Si lo dejas vacio, se usa el de Odissey.
+  prefijo: "&8[&eODISSEY&8]"
+  # Texto que ve el jugador al ser expulsado por un ban. Puedes cambiar los
+  # colores con & y reordenar, quitar o agregar líneas.
+  # Variables: %jugador%, %servidor%, %motivo%, %duracion% (o %tiempo%), %staff%.
+  servidor: "Odissey"
+  desconexion-baneo:
+    - "&cHas sido baneado de %servidor%"
+    - ""
+    - "&6Motivo: &f%motivo%"
+    - "&6Duración: &f%duracion%"
+    - "&6Staff: &f%staff%"
+
+sonidos:
+  # Apagar esto silencia TODOS los sonidos del plugin de una sola vez.
+  activo: true
+
+  # Cada sonido lleva su clave (nombre vanilla), su volumen y su tono.
+  # Se usan claves con nombre (minecraft:...) y no el nombre del enum, porque
+  # el enum cambia entre versiones: una clave desconocida no suena y ya, en
+  # lugar de romper el plugin. Baja el volumen si te resulta molesto.
+  #
+  #   abrir     al abrir un menu
+  #   click     al pulsar cualquier boton
+  #   exito     accion completada
+  #   error     accion que falla
+  #   denegado  intento sin permiso
+  #   volver    al regresar a un menu anterior
+  #   aviso     algo que hay que mirar, sin ser error
+  abrir:
+    clave: "minecraft:block.chest.open"
+    volumen: 0.4
+    tono: 1.4
+  click:
+    clave: "minecraft:ui.button.click"
+    volumen: 0.4
+    tono: 1.4
+  exito:
+    clave: "minecraft:entity.player.levelup"
+    volumen: 0.5
+    tono: 1.6
+  error:
+    clave: "minecraft:entity.villager.no"
+    volumen: 0.6
+    tono: 1.0
+  denegado:
+    clave: "minecraft:block.note_block.bass"
+    volumen: 0.7
+    tono: 0.7
+  volver:
+    clave: "minecraft:item.book.page_turn"
+    volumen: 0.4
+    tono: 1.0
+  aviso:
+    clave: "minecraft:block.note_block.pling"
+    volumen: 0.6
+    tono: 1.4
